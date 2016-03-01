@@ -8,15 +8,15 @@
 #include <TClonesArray.h>
 #include <Event.hh>
 #include <sstream>
-#define NX 1
-#define NY 1
+#define NX 14
+#define NY 10
 #define NCELL NX*NY
 using namespace std;
 float ave(vector<float>*);
 //float var(vector<float>*);
 int main(int argc, char* argv[])
 {
-
+    
     if(argc>1)
     {
 	for(int i=1;i<argc;++i)
@@ -56,10 +56,19 @@ int main(int argc, char* argv[])
 		tree->GetEntry(i);
 
 		
-		vector<float> * xList=new vector<float>();
 		vector<int> * volList=new vector<int>();
-		vector<float> * yList=new vector<float>();
-		vector<float> * zList=new vector<float>();
+		vector<float> * xList[NCELL];
+		vector<float> * yList[NCELL];
+		vector<float> * zList[NCELL];
+		for(int i =0;i<NCELL;++i)
+		{
+		    xList[i]=new vector<float>();
+		    yList[i]=new vector<float>();
+		    zList[i]=new vector<float>();
+		}
+		//vector<float> * xList=new vector<float>();
+		//vector<float> * yList=new vector<float>();
+		//vector<float> * zList=new vector<float>();
 		vector<float> * tLList=new vector<float>();
 		vector<float> * tRList=new vector<float>();
 		
@@ -140,29 +149,39 @@ int main(int argc, char* argv[])
 				int pid=vert->PID;
 				int vol=vert->vol;
 				if(pid==p&& vol>=0)
-				{	
-					xList->push_back(x);
-					yList->push_back(y);
-					zList->push_back(z);
+				{
+				    if(vol<NCELL)
+				    {
+					xList[vol]->push_back(x);
+					yList[vol]->push_back(y);
+					zList[vol]->push_back(z);
 					volList->push_back(vol);
+				    }
+				    else
+				    {
+					cout<<vol<<" is greater than NCELL value "<<NCELL<<" and needs to be changed\n";
+				    }
 				}
 			}
-			if(xList->size()!=0)
+			for(int i =0;i<NCELL;++i)
 			{
-			    float xAve=ave(xList);
-			    float yAve=ave(yList);
-			    float zAve=ave(zList);
-			    //cout<<"x pos:"<<xPos<<endl;
-			    //cout<<"y pos:"<<yPos<<endl;
-			    //cout<<"z pos:"<<zPos<<endl;
-			    xPos->push_back(xAve);
-			    yPos->push_back(yAve);
-			    zPos->push_back(zAve);
-			    time->push_back(dT);
-			    energy->push_back(e);
-			    PID->push_back(p);
-			    //lPulse->push_back(left);
-			    //rPulse->push_back(right);
+			    if(xList[i]->size()!=0)
+			    {
+				float xAve=ave(xList[i]);
+				float yAve=ave(yList[i]);
+				float zAve=ave(zList[i]);
+				//cout<<"x pos:"<<xPos<<endl;
+				//cout<<"y pos:"<<yPos<<endl;
+				//cout<<"z pos:"<<zPos<<endl;
+				xPos->push_back(xAve);
+				yPos->push_back(yAve);
+				zPos->push_back(zAve);
+				time->push_back(dT);
+				energy->push_back(e);
+				PID->push_back(p);
+				//lPulse->push_back(left);
+				//rPulse->push_back(right);
+			    }
 			}
 		    
 		    }
