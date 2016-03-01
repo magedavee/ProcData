@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
 	    vector<float> * energy=new vector<float>();
 	    vector<int> * PID=new vector<int>();
 	    vector<int> * VOL=new vector<int>();
+	    vector<int> * EVT=new vector<int>();
 	    vector<TH1F*> * lPulse=new vector<TH1F*>();
 	    vector<TH1F*> * rPulse=new vector<TH1F*>();
 	    TFile *out=new TFile(name.c_str(),"recreate");
@@ -61,11 +62,11 @@ int main(int argc, char* argv[])
 		vector<float> * xList[NCELL];
 		vector<float> * yList[NCELL];
 		vector<float> * zList[NCELL];
-		for(int i =0;i<NCELL;++i)
+		for(int j =0;j<NCELL;++j)
 		{
-		    xList[i]=new vector<float>();
-		    yList[i]=new vector<float>();
-		    zList[i]=new vector<float>();
+		    xList[j]=new vector<float>();
+		    yList[j]=new vector<float>();
+		    zList[j]=new vector<float>();
 		}
 		//vector<float> * xList=new vector<float>();
 		//vector<float> * yList=new vector<float>();
@@ -164,13 +165,13 @@ int main(int argc, char* argv[])
 				    }
 				}
 			}
-			for(int i =0;i<NCELL;++i)
+			for(int j =0;j<NCELL;++j)
 			{
-			    if(xList[i]->size()!=0)
+			    if(xList[j]->size()!=0)
 			    {
-				float xAve=ave(xList[i]);
-				float yAve=ave(yList[i]);
-				float zAve=ave(zList[i]);
+				float xAve=ave(xList[j]);
+				float yAve=ave(yList[j]);
+				float zAve=ave(zList[j]);
 				//cout<<"x pos:"<<xPos<<endl;
 				//cout<<"y pos:"<<yPos<<endl;
 				//cout<<"z pos:"<<zPos<<endl;
@@ -180,7 +181,8 @@ int main(int argc, char* argv[])
 				time->push_back(dT);
 				energy->push_back(e);
 				PID->push_back(p);
-				VOL->push_back(i);
+				VOL->push_back(j);
+				EVT->push_back(i);
 				//lPulse->push_back(left);
 				//rPulse->push_back(right);
 			    }
@@ -193,7 +195,7 @@ int main(int argc, char* argv[])
 	    cout<<"creating "<<name<<endl;
 	    TTree treeOut("photon_Data","process photon data");
 	    float x,y,z,t,e;
-	    int p,v;
+	    int p,v,ev;
 	    treeOut.Branch("x",&x,"x/F");
 	    treeOut.Branch("y",&y,"y/F");
 	    treeOut.Branch("z",&z,"z/F");
@@ -201,6 +203,7 @@ int main(int argc, char* argv[])
 	    treeOut.Branch("e",&e,"e/F");
 	    treeOut.Branch("pid",&p,"p/I");
 	    treeOut.Branch("vol",&v,"v/I");
+	    treeOut.Branch("evt",&ev,"ev/I");
 	    int evt=xPos->size();
 	    for(int j=0;j<evt;++j)
 	    {
@@ -212,6 +215,7 @@ int main(int argc, char* argv[])
 		e=energy->at(j);
 		p=PID->at(j);
 		v=VOL->at(j);
+		ev=EVT->at(j);
 		treeOut.Fill();
 		//lPulse->at(j)->Write();
 		//rPulse->at(j)->Write();
