@@ -8,11 +8,15 @@
 #include <TClonesArray.h>
 #include <Event.hh>
 #include <sstream>
+#define NX 1
+#define NY 1
+#define NCELL NX*NY
 using namespace std;
 float ave(vector<float>*);
 //float var(vector<float>*);
 int main(int argc, char* argv[])
 {
+
     if(argc>1)
     {
 	for(int i=1;i<argc;++i)
@@ -53,6 +57,7 @@ int main(int argc, char* argv[])
 
 		
 		vector<float> * xList=new vector<float>();
+		vector<int> * volList=new vector<int>();
 		vector<float> * yList=new vector<float>();
 		vector<float> * zList=new vector<float>();
 		vector<float> * tLList=new vector<float>();
@@ -77,11 +82,11 @@ int main(int argc, char* argv[])
 		    oss << i;
 		    lName+=oss.str();
 		    rName+=oss.str();
-		    cout<<lName<<endl;
+		    //cout<<lName<<endl;
 		    SecondaryParticleVertex* temp=(SecondaryParticleVertex*) photon->At(0);
 		    float max=temp->t-t0;
 		    float min=temp->t-t0;
-		    cout<<"max "<<temp->t<<endl;
+		    //cout<<"max "<<temp->t<<endl;
 		    for(int j=0;j<det;++j)
 		    {
 			SecondaryParticleVertex* pmt=(SecondaryParticleVertex*) photon->At(j);
@@ -133,11 +138,13 @@ int main(int argc, char* argv[])
 				float y=vert->x[2];
 				float z=vert->x[1];
 				int pid=vert->PID;
-				if(pid==p)
+				int vol=vert->vol;
+				if(pid==p&& vol>=0)
 				{	
 					xList->push_back(x);
 					yList->push_back(y);
 					zList->push_back(z);
+					volList->push_back(vol);
 				}
 			}
 			if(xList->size()!=0)
