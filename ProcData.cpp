@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 	    vector<float> * time=new vector<float>();
 	    vector<float> * energy=new vector<float>();
 	    vector<int> * PID=new vector<int>();
+	    vector<int> * VOL=new vector<int>();
 	    vector<TH1F*> * lPulse=new vector<TH1F*>();
 	    vector<TH1F*> * rPulse=new vector<TH1F*>();
 	    TFile *out=new TFile(name.c_str(),"recreate");
@@ -179,6 +180,7 @@ int main(int argc, char* argv[])
 				time->push_back(dT);
 				energy->push_back(e);
 				PID->push_back(p);
+				VOL->push_back(i);
 				//lPulse->push_back(left);
 				//rPulse->push_back(right);
 			    }
@@ -191,13 +193,14 @@ int main(int argc, char* argv[])
 	    cout<<"creating "<<name<<endl;
 	    TTree treeOut("photon_Data","process photon data");
 	    float x,y,z,t,e;
-	    int p;
+	    int p,v;
 	    treeOut.Branch("x",&x,"x/F");
 	    treeOut.Branch("y",&y,"y/F");
 	    treeOut.Branch("z",&z,"z/F");
 	    treeOut.Branch("t",&t,"t/F");
 	    treeOut.Branch("e",&e,"e/F");
 	    treeOut.Branch("pid",&p,"p/I");
+	    treeOut.Branch("vol",&v,"v/I");
 	    int evt=xPos->size();
 	    for(int j=0;j<evt;++j)
 	    {
@@ -208,6 +211,7 @@ int main(int argc, char* argv[])
 		t=time->at(j);
 		e=energy->at(j);
 		p=PID->at(j);
+		v=VOL->at(j);
 		treeOut.Fill();
 		//lPulse->at(j)->Write();
 		//rPulse->at(j)->Write();
