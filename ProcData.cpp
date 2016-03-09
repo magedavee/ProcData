@@ -87,108 +87,115 @@ int main(int argc, char* argv[])
 		{
 		    ParticleVertex* pv=(ParticleVertex*) particle->At(0);
 		    int p=pv->PID;
-		    string lName("left");
-		    string rName("right");
-		    ostringstream oss;
-		    oss << i;
-		    lName+=oss.str();
-		    rName+=oss.str();
-		    //cout<<lName<<endl;
-		    SecondaryParticleVertex* temp=(SecondaryParticleVertex*) photon->At(0);
-		    float max=temp->t-t0;
-		    float min=temp->t-t0;
-		    //cout<<"max "<<temp->t<<endl;
-		    for(int j=0;j<det;++j)
+		    float mx=pv->p[0];
+		    float my=pv->p[1];
+		    float mz=pv->p[2];
+		    if(mz<-.12228)
 		    {
-			SecondaryParticleVertex* pmt=(SecondaryParticleVertex*) photon->At(j);
-			float t=pmt->t-t0;
-			if(min>t)
+			string lName("left");
+			string rName("right");
+			ostringstream oss;
+			oss << i;
+			lName+=oss.str();
+			rName+=oss.str();
+			//cout<<lName<<endl;
+			SecondaryParticleVertex* temp=(SecondaryParticleVertex*) photon->At(0);
+			float max=temp->t-t0;
+			float min=temp->t-t0;
+			//cout<<"max "<<temp->t<<endl;
+			for(int j=0;j<det;++j)
 			{
-			    min=t;
-			}
-			if(max<t)
-			{
-			    max=t;
-			}
-			//cout<<t<<endl;
-			float y=pmt->x[1];
-			if(y<0)
-			{
-				tLList->push_back(t);
-			}
-			else
-			{
-				tRList->push_back(t);
-			}
-		    }
-		    //int Min=(int)min;
-		    //int Max=(int)max;
-		    //cout<<"min "<<Min;
-		    //TH1F* left= new TH1F(lName.c_str(),lName.c_str(),Max-Min,Min,Max);
-		    //TH1F* right= new TH1F(lName.c_str(),lName.c_str(),Max-Min,Min,Max);
-		    //for(int j=0;j<det;++j)
-		    //{
-			//SecondaryParticleVertex* pmt=(SecondaryParticleVertex*) photon->At(j);
-			//float t=pmt->t-t0;
-			//float y=pmt->x[1];
-			//if(y<0)
-				//left->Fill(t);
-			//else
-				//right->Fill(t);
-		    //}
-		    float tLAve=ave(tLList);
-		    float tRAve=ave(tRList);
-		    float dT=tLAve-tRAve;
-		    if((dT*dT)<(100*100))
-		    {
-			int num=ion->nIoniClusts;
-			for(int j=0;j<num;++j)
-			{
-				IoniCluster* vert = (IoniCluster*) clusts->At(j);
-				float x=vert->x[0];
-				float y=vert->x[2];
-				float z=vert->x[1];
-				int pid=vert->PID;
-				int vol=vert->vol;
-				if(pid==p&& vol>=0)
-				{
-				    if(vol<NCELL)
-				    {
-					xList[vol]->push_back(x);
-					yList[vol]->push_back(y);
-					zList[vol]->push_back(z);
-					volList->push_back(vol);
-				    }
-				    else
-				    {
-					cout<<vol<<" is greater than NCELL value "<<NCELL<<" and needs to be changed\n";
-				    }
-				}
-			}
-			for(int j =0;j<NCELL;++j)
-			{
-			    if(xList[j]->size()!=0)
+			    SecondaryParticleVertex* pmt=(SecondaryParticleVertex*) photon->At(j);
+			    float t=pmt->t-t0;
+			    if(min>t)
 			    {
-				float xAve=ave(xList[j]);
-				float yAve=ave(yList[j]);
-				float zAve=ave(zList[j]);
-				//cout<<"x pos:"<<xPos<<endl;
-				//cout<<"y pos:"<<yPos<<endl;
-				//cout<<"z pos:"<<zPos<<endl;
-				xPos->push_back(xAve);
-				yPos->push_back(yAve);
-				zPos->push_back(zAve);
-				time->push_back(dT);
-				energy->push_back(e);
-				PID->push_back(p);
-				VOL->push_back(j);
-				EVT->push_back(i);
-				//lPulse->push_back(left);
-				//rPulse->push_back(right);
+				min=t;
+			    }
+			    if(max<t)
+			    {
+				max=t;
+			    }
+			    //cout<<t<<endl;
+			    float y=pmt->x[1];
+			    if(y<0)
+			    {
+				    tLList->push_back(t);
+			    }
+			    else
+			    {
+				    tRList->push_back(t);
 			    }
 			}
-		    
+			//int Min=(int)min;
+			//int Max=(int)max;
+			//cout<<"min "<<Min;
+			//TH1F* left= new TH1F(lName.c_str(),lName.c_str(),Max-Min,Min,Max);
+			//TH1F* right= new TH1F(lName.c_str(),lName.c_str(),Max-Min,Min,Max);
+			//for(int j=0;j<det;++j)
+			//{
+			    //SecondaryParticleVertex* pmt=(SecondaryParticleVertex*) photon->At(j);
+			    //float t=pmt->t-t0;
+			    //float y=pmt->x[1];
+			    //if(y<0)
+				    //left->Fill(t);
+			    //else
+				    //right->Fill(t);
+			//}
+			float tLAve=ave(tLList);
+			float tRAve=ave(tRList);
+			float dT=tLAve-tRAve;
+			if((dT*dT)<(100*100))
+			{
+			    int num=ion->nIoniClusts;
+			    for(int j=0;j<num;++j)
+			    {
+				    IoniCluster* vert = (IoniCluster*) clusts->At(j);
+				    float x=vert->x[0];
+				    float y=vert->x[2];
+				    float z=vert->x[1];
+				    int pid=vert->PID;
+				    int vol=vert->vol;
+				    if(pid==p&& vol>=0)
+				    {
+					if(vol<NCELL)
+					{
+					    xList[vol]->push_back(x);
+					    yList[vol]->push_back(y);
+					    zList[vol]->push_back(z);
+					    volList->push_back(vol);
+					}
+					else
+					{
+					    cout<<vol<<" is greater than NCELL value "<<NCELL<<" and needs to be changed\n";
+					}
+				    }
+			    }
+			    for(int j =0;j<NCELL;++j)
+			    {
+				if(xList[j]->size()!=0)
+				{
+				    float xAve=ave(xList[j]);
+				    float yAve=ave(yList[j]);
+				    float zAve=ave(zList[j]);
+				    //cout<<"x pos:"<<xPos<<endl;
+				    //cout<<"y pos:"<<yPos<<endl;
+				    //cout<<"z pos:"<<zPos<<endl;
+				    xPos->push_back(xAve);
+				    yPos->push_back(yAve);
+				    zPos->push_back(zAve);
+				    time->push_back(dT);
+				    energy->push_back(e);
+				    PID->push_back(p);
+				    VOL->push_back(j);
+				    EVT->push_back(i);
+				    //lPulse->push_back(left);
+				    //rPulse->push_back(right);
+				}
+			    }
+			} 
 		    }
+		    else
+			cout<<mz<<endl;
 		}
 	    }
 	    
