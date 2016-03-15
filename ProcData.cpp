@@ -21,12 +21,12 @@ int main(int argc, char* argv[])
     {
 	for(int i=1;i<argc;++i)
 	{
-	    //string input("/home/neutrino/mage/CRY_SIM/output/root/");
-	    string input("");
+	    string input("/home/neutrino/mage/CRY_SIM/output/root/");
+	    //string input("");
 	    input.append(argv[i]);
 	    TFile  *file= new TFile(input.c_str());
-	    //string name("/home/neutrino/mage/CRY_SIM/output/proc/proc_");
-	    string name("");
+	    string name("/home/neutrino/mage/CRY_SIM/output/proc/proc_");
+	    //string name("");
 	    name.append(argv[i]);
 	    name.append(".pro");
 	    cout<<name<<endl;
@@ -42,11 +42,16 @@ int main(int argc, char* argv[])
 	    vector<float> * xPos=new vector<float>();
 	    vector<float> * yPos=new vector<float>();
 	    vector<float> * zPos=new vector<float>();
+	    vector<float> * xMom=new vector<float>();
+	    vector<float> * yMom=new vector<float>();
+	    vector<float> * zMom=new vector<float>();
 	    vector<float> * time=new vector<float>();
 	    vector<float> * energy=new vector<float>();
 	    vector<int> * PID=new vector<int>();
 	    vector<int> * VOL=new vector<int>();
 	    vector<int> * EVT=new vector<int>();
+	    vector<int> * right=new vector<int>();
+	    vector<int> * left=new vector<int>();
 	    vector<TH1F*> * lPulse=new vector<TH1F*>();
 	    vector<TH1F*> * rPulse=new vector<TH1F*>();
 	    TFile *out=new TFile(name.c_str(),"recreate");
@@ -143,6 +148,8 @@ int main(int argc, char* argv[])
 			//}
 			float tLAve=ave(tLList);
 			float tRAve=ave(tRList);
+			int photoL=tLList->size();
+			int photoR=tRList->size();
 			float dT=tLAve-tRAve;
 			if((dT*dT)<(100*100))
 			{
@@ -188,6 +195,11 @@ int main(int argc, char* argv[])
 				    PID->push_back(p);
 				    VOL->push_back(j);
 				    EVT->push_back(i);
+				    left->push_back(photoL);
+				    right->push_back(photoR);
+				    xMom->push_back(mx);
+				    yMom->push_back(my);
+				    zMom->push_back(mz);
 				    //lPulse->push_back(left);
 				    //rPulse->push_back(right);
 				}
@@ -201,13 +213,16 @@ int main(int argc, char* argv[])
 	    
 	    cout<<"creating "<<name<<endl;
 	    TTree treeOut("photon_Data","process photon data");
-	    float x,y,z,t,e;
+	    float x,y,z,t,e,mX,mY,mZ;
 	    int p,v,ev;
 	    treeOut.Branch("x",&x,"x/F");
 	    treeOut.Branch("y",&y,"y/F");
 	    treeOut.Branch("z",&z,"z/F");
 	    treeOut.Branch("t",&t,"t/F");
 	    treeOut.Branch("e",&e,"e/F");
+	    treeOut.Branch("momX",&mX,"mX/F");
+	    treeOut.Branch("momY",&mY,"mY/F");
+	    treeOut.Branch("momZ",&mZ,"mZ/F");
 	    treeOut.Branch("pid",&p,"p/I");
 	    treeOut.Branch("vol",&v,"v/I");
 	    treeOut.Branch("evt",&ev,"ev/I");
@@ -223,6 +238,9 @@ int main(int argc, char* argv[])
 		p=PID->at(j);
 		v=VOL->at(j);
 		ev=EVT->at(j);
+		mX=xMom->at(j);
+		mY=yMom->at(j);
+		mZ=zMom->at(j);
 		treeOut.Fill();
 		//lPulse->at(j)->Write();
 		//rPulse->at(j)->Write();
