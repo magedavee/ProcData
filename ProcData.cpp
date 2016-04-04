@@ -21,12 +21,12 @@ int main(int argc, char* argv[])
     {
 	for(int i=1;i<argc;++i)
 	{
-	    string input("/home/neutrino/mage/CRY_SIM/output/root/");
-	    //string input("");
+	    //string input("/home/neutrino/mage/CRY_SIM/output/root/");
+	    string input("");
 	    input.append(argv[i]);
 	    TFile  *file= new TFile(input.c_str());
-	    string name("/home/neutrino/mage/CRY_SIM/output/proc/proc_");
-	    //string name("");
+	    //string name("/home/neutrino/mage/CRY_SIM/output/proc/proc_");
+	    string name("");
 	    name.append(argv[i]);
 	    name.append(".pro");
 	    cout<<name<<endl;
@@ -42,10 +42,18 @@ int main(int argc, char* argv[])
 	    vector<float> * xPos=new vector<float>();
 	    vector<float> * yPos=new vector<float>();
 	    vector<float> * zPos=new vector<float>();
+	    vector<float> * xPos0=new vector<float>();
+	    vector<float> * yPos0=new vector<float>();
+	    vector<float> * zPos0=new vector<float>();
+	    vector<float> * xPos1=new vector<float>();
+	    vector<float> * yPos1=new vector<float>();
+	    vector<float> * zPos1=new vector<float>();
 	    vector<float> * xMom=new vector<float>();
 	    vector<float> * yMom=new vector<float>();
 	    vector<float> * zMom=new vector<float>();
 	    vector<float> * time=new vector<float>();
+	    vector<float> * timeL=new vector<float>();
+	    vector<float> * timeR=new vector<float>();
 	    vector<float> * energy=new vector<float>();
 	    vector<int> * PID=new vector<int>();
 	    vector<int> * VOL=new vector<int>();
@@ -61,7 +69,7 @@ int main(int argc, char* argv[])
 		percent=percent/100.0;
 		cout<<percent<<" %\n";
 		tree->GetEntry(i);
-
+		float x0,y0,z0,x1,y1,z1;
 		
 		vector<int> * volList=new vector<int>();
 		vector<float> * xList[NCELL];
@@ -160,6 +168,15 @@ int main(int argc, char* argv[])
 				    float x=vert->x[0];
 				    float y=vert->x[2];
 				    float z=vert->x[1];
+				    if(j==0)
+				    {
+					x0=x;
+					y0=y;
+					z0=z;
+				    }
+				    x1=x;
+				    y1=y;
+				    z1=z;
 				    int pid=vert->PID;
 				    int vol=vert->vol;
 				    if(pid==p&& vol>=0)
@@ -190,7 +207,15 @@ int main(int argc, char* argv[])
 				    xPos->push_back(xAve);
 				    yPos->push_back(yAve);
 				    zPos->push_back(zAve);
+				    xPos0->push_back(x0);
+				    yPos0->push_back(y0);
+				    zPos0->push_back(z0);
+				    xPos1->push_back(x1);
+				    yPos1->push_back(y1);
+				    zPos1->push_back(z1);
 				    time->push_back(dT);
+				    timeL->push_back(tLAve);
+				    timeR->push_back(tRAve);
 				    energy->push_back(e);
 				    PID->push_back(p);
 				    VOL->push_back(j);
@@ -213,12 +238,20 @@ int main(int argc, char* argv[])
 	    
 	    cout<<"creating "<<name<<endl;
 	    TTree treeOut("photon_Data","process photon data");
-	    float x,y,z,t,e,mX,mY,mZ;
-	    int p,v,ev;
+	    float x,y,z0,x0,y0,z1,x1,y1,z,t,e,mX,mY,mZ,tl,tr;
+	    int p,v,ev,l,r;
 	    treeOut.Branch("x",&x,"x/F");
 	    treeOut.Branch("y",&y,"y/F");
 	    treeOut.Branch("z",&z,"z/F");
+	    treeOut.Branch("x0",&x0,"x0/F");
+	    treeOut.Branch("y0",&y0,"y0/F");
+	    treeOut.Branch("z0",&z0,"z0/F");
+	    treeOut.Branch("x1",&x1,"x1/F");
+	    treeOut.Branch("y1",&y1,"y1/F");
+	    treeOut.Branch("z1",&z1,"z1/F");
 	    treeOut.Branch("t",&t,"t/F");
+	    treeOut.Branch("tl",&tl,"tl/F");
+	    treeOut.Branch("tr",&tr,"tr/F");
 	    treeOut.Branch("e",&e,"e/F");
 	    treeOut.Branch("momX",&mX,"mX/F");
 	    treeOut.Branch("momY",&mY,"mY/F");
@@ -226,6 +259,8 @@ int main(int argc, char* argv[])
 	    treeOut.Branch("pid",&p,"p/I");
 	    treeOut.Branch("vol",&v,"v/I");
 	    treeOut.Branch("evt",&ev,"ev/I");
+	    treeOut.Branch("left",&l,"l/I");
+	    treeOut.Branch("right",&r,"r/I");
 	    int evt=xPos->size();
 	    for(int j=0;j<evt;++j)
 	    {
@@ -233,7 +268,15 @@ int main(int argc, char* argv[])
 		x=xPos->at(j);
 		y=yPos->at(j);
 		z=zPos->at(j);
+		x0=xPos0->at(j);
+		y0=yPos0->at(j);
+		z0=zPos0->at(j);
+		x1=xPos1->at(j);
+		y1=yPos1->at(j);
+		z1=zPos1->at(j);
 		t=time->at(j);
+		tl=timeL->at(j);
+		tr=timeR->at(j);
 		e=energy->at(j);
 		p=PID->at(j);
 		v=VOL->at(j);
@@ -241,6 +284,8 @@ int main(int argc, char* argv[])
 		mX=xMom->at(j);
 		mY=yMom->at(j);
 		mZ=zMom->at(j);
+		l=left->at(j);
+		r=right->at(j);
 		treeOut.Fill();
 		//lPulse->at(j)->Write();
 		//rPulse->at(j)->Write();
