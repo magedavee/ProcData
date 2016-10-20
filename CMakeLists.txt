@@ -5,7 +5,7 @@ project(ProcData)
 include(FindROOT.cmake)
 
 set(PG_LIB $ENV{PG4_LIB_DIR})
-set(PG_INC "$ENV{PG4_CODE}/include/Output")
+set(PG_INC "$ENV{PG4_SEC}/include/Output")
 
 include_directories(${ROOT_INCLUDE_DIR} ${PG_INC})
 link_directories(${ROOT_LIBRARY_DIR} ${PG_LIB})

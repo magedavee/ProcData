@@ -4,18 +4,23 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TH1.h>
 #include <TClonesArray.h>
+#include <TApplication.h>
 #include <Event.hh>
 #include <sstream>
-#define NX 14
-#define NY 10
+#define NX 1
+#define NY 2
 #define NCELL NX*NY
+#define ZOFF 450
+#define LAT 144.198 
 using namespace std;
 float ave(vector<float>*);
 //float var(vector<float>*);
 int main(int argc, char* argv[])
 {
+    cout<<argc<<" "<<argv[1]<<endl;
     
     if(argc>1)
     {
@@ -24,6 +29,7 @@ int main(int argc, char* argv[])
 	    //string input("/home/neutrino/mage/CRY_SIM/output/root/");
 	    string input("");
 	    input.append(argv[i]);
+	    cout<<input<<endl;
 	    TFile  *file= new TFile(input.c_str());
 	    //string name("/home/neutrino/mage/CRY_SIM/output/proc/proc_");
 	    string name("");
@@ -39,6 +45,8 @@ int main(int argc, char* argv[])
 	    tree->SetBranchAddress("SecParticle",&sp);
 	    cout<<"Processing "<<argv[i]<<endl;
 	    int entries=tree->GetEntries();
+	    //int entries=100;
+	    TH2F pmtPos("pmtPos","Photon Pos hit",281,-140,140,281,-140+ZOFF+(NY-1)*LAT,140+ZOFF-(NY-1)*LAT);
 	    vector<float> * xPos=new vector<float>();
 	    vector<float> * yPos=new vector<float>();
 	    vector<float> * zPos=new vector<float>();
@@ -63,6 +71,7 @@ int main(int argc, char* argv[])
 	    vector<TH1F*> * lPulse=new vector<TH1F*>();
 	    vector<TH1F*> * rPulse=new vector<TH1F*>();
 	    TFile *out=new TFile(name.c_str(),"recreate");
+	    //TApplication theApp("App",&argc, argv);
 	    for(int i=0;i<entries;++i)
 	    {
 		float percent=i*10000/entries;
@@ -75,17 +84,16 @@ int main(int argc, char* argv[])
 		vector<float> * xList[NCELL];
 		vector<float> * yList[NCELL];
 		vector<float> * zList[NCELL];
+		vector<float> * tLList[NCELL];
+		vector<float> * tRList[NCELL];
 		for(int j =0;j<NCELL;++j)
 		{
 		    xList[j]=new vector<float>();
 		    yList[j]=new vector<float>();
 		    zList[j]=new vector<float>();
+		    tLList[j]=new vector<float>();
+		    tRList[j]=new vector<float>();
 		}
-		//vector<float> * xList=new vector<float>();
-		//vector<float> * yList=new vector<float>();
-		//vector<float> * zList=new vector<float>();
-		vector<float> * tLList=new vector<float>();
-		vector<float> * tRList=new vector<float>();
 		
 		TClonesArray * photon=sp->particles;
 		TClonesArray * particle=prim->particles;
@@ -111,11 +119,9 @@ int main(int argc, char* argv[])
 			oss << i;
 			lName+=oss.str();
 			rName+=oss.str();
-			//cout<<lName<<endl;
 			SecondaryParticleVertex* temp=(SecondaryParticleVertex*) photon->At(0);
 			float max=temp->t-t0;
 			float min=temp->t-t0;
-			//cout<<"max "<<temp->t<<endl;
 			for(int j=0;j<det;++j)
 			{
 			    SecondaryParticleVertex* pmt=(SecondaryParticleVertex*) photon->At(j);
@@ -128,38 +134,48 @@ int main(int argc, char* argv[])
 			    {
 				max=t;
 			    }
-			    //cout<<t<<endl;
 			    float y=pmt->x[1];
+			    float x=pmt->x[0];
+			    float z=pmt->x[2]+(NY-1)*LAT+ZOFF;
+			    int cell=z/LAT;
+			    pmtPos.Fill(x,z);
 			    if(y<0)
 			    {
-				    tLList->push_back(t);
+				    tLList[cell]->push_back(t);
 			    }
 			    else
 			    {
-				    tRList->push_back(t);
+				    tRList[cell]->push_back(t);
 			    }
 			}
-			//int Min=(int)min;
-			//int Max=(int)max;
-			//cout<<"min "<<Min;
-			//TH1F* left= new TH1F(lName.c_str(),lName.c_str(),Max-Min,Min,Max);
-			//TH1F* right= new TH1F(lName.c_str(),lName.c_str(),Max-Min,Min,Max);
-			//for(int j=0;j<det;++j)
-			//{
-			    //SecondaryParticleVertex* pmt=(SecondaryParticleVertex*) photon->At(j);
-			    //float t=pmt->t-t0;
-			    //float y=pmt->x[1];
-			    //if(y<0)
-				    //left->Fill(t);
-			    //else
-				    //right->Fill(t);
-			//}
-			float tLAve=ave(tLList);
-			float tRAve=ave(tRList);
-			int photoL=tLList->size();
-			int photoR=tRList->size();
-			float dT=tLAve-tRAve;
-			if((dT*dT)<(100*100))
+			float tLAve[NCELL];
+			float tRAve[NCELL];
+			for(int j=0;j<NCELL;++j)
+			{
+			    tLAve[j]=ave(tLList[j]);
+			    tRAve[j]=ave(tRList[j]);
+			}
+			int photoL[NCELL];
+			int photoR[NCELL];
+			for(int j=0;j<NCELL;++j)
+			{
+			    photoL[j]=tLList[j]->size();
+			    photoR[j]=tRList[j]->size();
+			}
+			float dT[NCELL];
+			for(int j=0;j<NCELL;++j)
+			{
+			   dT[j] =tLAve[j]-tRAve[j];
+			}
+			bool test=true;
+			for(int j=0;j<NCELL;++j)
+			{
+			   if ((dT[j]*dT[j])>(100*100))
+			   {
+			       test=false;
+			   }
+			}
+			if(test)
 			{
 			    int num=ion->nIoniClusts;
 			    for(int j=0;j<num;++j)
@@ -201,9 +217,13 @@ int main(int argc, char* argv[])
 				    float xAve=ave(xList[j]);
 				    float yAve=ave(yList[j]);
 				    float zAve=ave(zList[j]);
-				    //cout<<"x pos:"<<xPos<<endl;
-				    //cout<<"y pos:"<<yPos<<endl;
-				    //cout<<"z pos:"<<zPos<<endl;
+				    float dt=dT[j];
+				    float tl=tLAve[j];
+				    float tr=tRAve[j];
+				    int Left=photoL[j];
+				    int Right=photoR[j];
+				    left->push_back(Left);
+				    right->push_back(Right);
 				    xPos->push_back(xAve);
 				    yPos->push_back(yAve);
 				    zPos->push_back(zAve);
@@ -213,15 +233,13 @@ int main(int argc, char* argv[])
 				    xPos1->push_back(x1);
 				    yPos1->push_back(y1);
 				    zPos1->push_back(z1);
-				    time->push_back(dT);
-				    timeL->push_back(tLAve);
-				    timeR->push_back(tRAve);
+				    time->push_back(dt);
+				    timeL->push_back(tl);
+				    timeR->push_back(tr);
 				    energy->push_back(e);
 				    PID->push_back(p);
 				    VOL->push_back(j);
 				    EVT->push_back(i);
-				    left->push_back(photoL);
-				    right->push_back(photoR);
 				    xMom->push_back(mx);
 				    yMom->push_back(my);
 				    zMom->push_back(mz);
@@ -235,7 +253,10 @@ int main(int argc, char* argv[])
 			cout<<mz<<endl;
 		}
 	    }
-	    
+	    //pmtPos.Draw("colz");
+	    //char q;
+	    //cin>>q;
+	    //theApp.Run();
 	    cout<<"creating "<<name<<endl;
 	    TTree treeOut("photon_Data","process photon data");
 	    float x,y,z0,x0,y0,z1,x1,y1,z,t,e,mX,mY,mZ,tl,tr;
